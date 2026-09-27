@@ -20,6 +20,7 @@ import { configureBumpChannel } from './bump-permissions.js';
 import { repairWelcomeNames } from './repair-welcome-names.js';
 import { createBotInvite, setupGenericGuild, handleGenericMemberAdd, handleGenericInteraction } from './generic-guild.js';
 import { isGenericGuild } from './guild-profile.js';
+import { setupUcmSelfRoles, UCM_GUILD_ID } from './ucm-self-roles.js';
 
 const {
   DISCORD_TOKEN,
@@ -768,6 +769,13 @@ client.once(Events.ClientReady, async () => {
 
   const connectedGuilds = [...client.guilds.cache.values()];
   console.log(`[MULTI] Servidores conectados: ${connectedGuilds.map((guild) => `${guild.name} (${guild.id})`).join(' | ')}`);
+
+  const ucmGuild = client.guilds.cache.get(UCM_GUILD_ID) || await client.guilds.fetch(UCM_GUILD_ID).catch(() => null);
+  if (ucmGuild) {
+    setupUcmSelfRoles(ucmGuild).catch((error) => {
+      console.error('[UCM-ROLES] Falha na configuração direta:', error);
+    });
+  }
 
   await Promise.allSettled(
     connectedGuilds.map((guild) => setupGuild(guild))
