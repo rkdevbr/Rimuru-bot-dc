@@ -69,6 +69,10 @@ export async function createBotInvite(client) {
 export async function setupGenericGuild(guild, client) {
   if (!isGenericGuild(guild)) return false;
 
+  await setupUcmSelfRoles(guild).catch((error) => {
+    console.error(`[UCM-ROLES] Falha ao preparar cargos em ${guild.name}:`, error);
+  });
+
   await removeLegacyMangaMorphArtifacts(guild).catch((error) => {
     console.error(`[MULTI-CLEANUP] Falha ao limpar ${guild.name}:`, error);
   });
@@ -78,9 +82,6 @@ export async function setupGenericGuild(guild, client) {
   await setupWelcomeManager(guild, client);
   await setupLivePreview(guild, client);
   await setupEmbedStudio(guild);
-  await setupUcmSelfRoles(guild).catch((error) => {
-    console.error(`[UCM-ROLES] Falha ao preparar cargos em ${guild.name}:`, error);
-  });
 
   console.log(`[MULTI] ${guild.name} (${guild.id}): modo genérico seguro preparado.`);
   return true;

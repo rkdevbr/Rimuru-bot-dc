@@ -766,9 +766,12 @@ client.once(Events.ClientReady, async () => {
     console.error('[WELCOME-REPAIR] Falha na correção de nomes:', error);
   });
 
-  for (const guild of client.guilds.cache.values()) {
-    await setupGuild(guild);
-  }
+  const connectedGuilds = [...client.guilds.cache.values()];
+  console.log(`[MULTI] Servidores conectados: ${connectedGuilds.map((guild) => `${guild.name} (${guild.id})`).join(' | ')}`);
+
+  await Promise.allSettled(
+    connectedGuilds.map((guild) => setupGuild(guild))
+  );
 });
 
 client.on(Events.GuildCreate, async (guild) => {
