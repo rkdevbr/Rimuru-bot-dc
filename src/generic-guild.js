@@ -13,6 +13,7 @@ import { setupLivePreview } from './live-preview.js';
 import { setupEmbedStudio } from './embed-studio.js';
 import { isGenericGuild } from './guild-profile.js';
 import { removeLegacyMangaMorphArtifacts } from './generic-cleanup.js';
+import { setupUcmSelfRoles, handleUcmSelfRoleInteraction } from './ucm-self-roles.js';
 
 const rimuruCommand = new SlashCommandBuilder()
   .setName('rimuru')
@@ -59,6 +60,7 @@ export async function createBotInvite(client) {
       PermissionFlagsBits.AddReactions,
       PermissionFlagsBits.ManageMessages,
       PermissionFlagsBits.ManageChannels,
+      PermissionFlagsBits.ManageRoles,
       PermissionFlagsBits.ManageWebhooks
     ]
   });
@@ -76,6 +78,9 @@ export async function setupGenericGuild(guild, client) {
   await setupWelcomeManager(guild, client);
   await setupLivePreview(guild, client);
   await setupEmbedStudio(guild);
+  await setupUcmSelfRoles(guild).catch((error) => {
+    console.error(`[UCM-ROLES] Falha ao preparar cargos em ${guild.name}:`, error);
+  });
 
   console.log(`[MULTI] ${guild.name} (${guild.id}): modo genérico seguro preparado.`);
   return true;
@@ -93,6 +98,9 @@ export async function handleGenericMemberAdd(member, client) {
 
 export async function handleGenericInteraction(interaction, client) {
   if (!interaction.inGuild() || !isGenericGuild(interaction.guild)) return false;
+
+  if (await handleUcmSelfRoleInteraction(interaction)) return true;
+
   if (!interaction.isChatInputCommand() || interaction.commandName !== 'rimuru') return false;
 
   const subcommand = interaction.options.getSubcommand();
