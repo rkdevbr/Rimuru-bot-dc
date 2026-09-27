@@ -2,6 +2,7 @@ import {
   ChannelType,
   EmbedBuilder
 } from 'discord.js';
+import { isMangaMorphGuild } from './guild-profile.js';
 
 const normalize = (value = '') => value
   .normalize('NFD')
@@ -237,6 +238,8 @@ async function upsertPanelMessage(channel, client, title, embed, reactions = [])
 }
 
 export async function setupReactionRoles(guild, client) {
+  if (!isMangaMorphGuild(guild)) return false;
+
   const channel = await findOrCreateRolesChannel(guild);
   await setReadOnlyReactionPermissions(channel, guild, client);
 
@@ -284,6 +287,7 @@ async function resolveReactionContext(reaction, user) {
 
   const message = reaction.message;
   const guild = message.guild;
+  if (!guild || !isMangaMorphGuild(guild)) return null;
   const channel = message.channel;
 
   if (!guild || normalize(channel.name) !== 'cargos') return null;
